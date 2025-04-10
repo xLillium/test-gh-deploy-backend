@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-push:
+  build-and-push-docker-image:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,6 +19,9 @@ jobs:
           java-version: 17
           cache: 'maven'
 
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
       - name: Build JAR
         run: |
           ./mvnw clean package -DskipTests
@@ -29,10 +32,10 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t ghcr.io/xlillium/cryptobalancer-backend:${{ github.sha }} .
-          docker tag ghcr.io/xlillium/cryptobalancer-backend:${{ github.sha }} ghcr.io/<ton-user>/cryptobalancer-backend:latest
+          docker build -t ghcr.io/xlillium/test-gh-deploy-backend:${{ github.sha }} .
+          docker tag ghcr.io/xlillium/test-gh-deploy-backend:${{ github.sha }} ghcr.io/xlillium/test-gh-deploy-backend:latest
 
       - name: Push Docker Image
         run: |
-          docker push ghcr.io/xlillium/cryptobalancer-backend:${{ github.sha }}
-          docker push ghcr.io/xlillium/cryptobalancer-backend:latest
+          docker push ghcr.io/xlillium/test-gh-deploy-backend:${{ github.sha }}
+          docker push ghcr.io/xlillium/test-gh-deploy-backend:latest
