@@ -1,0 +1,38 @@
+name: Publish Docker Image to GHCR
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'maven'
+
+      - name: Build JAR
+        run: |
+          ./mvnw clean package -DskipTests
+
+      - name: Log in to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u xlillium --password-stdin
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ghcr.io/xlillium/cryptobalancer-backend:${{ github.sha }} .
+          docker tag ghcr.io/xlillium/cryptobalancer-backend:${{ github.sha }} ghcr.io/<ton-user>/cryptobalancer-backend:latest
+
+      - name: Push Docker Image
+        run: |
+          docker push ghcr.io/xlillium/cryptobalancer-backend:${{ github.sha }}
+          docker push ghcr.io/xlillium/cryptobalancer-backend:latest
