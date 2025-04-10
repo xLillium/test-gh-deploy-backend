@@ -1,4 +1,4 @@
-name: Publish Docker Image to GHCR
+name: Publish and Deploy
 
 on:
   push:
@@ -39,3 +39,20 @@ jobs:
         run: |
           docker push ghcr.io/xlillium/test-gh-deploy-backend:${{ github.sha }}
           docker push ghcr.io/xlillium/test-gh-deploy-backend:latest
+
+  deploy:
+    needs: build-and-push-docker-image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy on VPS via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+
+          script: |
+            # docker login ghcr.io -u "${{ secrets.GHCR_USER }}" -p "${{ secrets.GHCR_TOKEN }}"
+
+            env GIT_COMMIT_HASH=${{ github.sha }} docker stack deploy -c docker-stack.yml test-gh-deploy
