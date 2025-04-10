@@ -1,4 +1,4 @@
-name: CI
+name: CI - Tests
 
 on:
   pull_request:
@@ -6,10 +6,11 @@ on:
 
 jobs:
   build-and-test:
+    name: Build and Test
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out code
+      - name: Checkout source code
         uses: actions/checkout@v3
 
       - name: Set up JDK 17
@@ -19,7 +20,7 @@ jobs:
           java-version: 17
           cache: 'maven'
 
-      - name: Make mvnw executable
+      - name: Ensure mvnw is executable
         run: chmod +x mvnw
 
       - name: Build and run tests

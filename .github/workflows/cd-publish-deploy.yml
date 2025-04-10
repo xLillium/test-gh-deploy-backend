@@ -1,15 +1,16 @@
-name: Publish and Deploy
+name: CD - Publish and Deploy
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build-and-push-docker-image:
+  build-and-publish:
+    name: Build and Publish Docker Image
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v3
 
       - name: Set up JDK 17
@@ -19,12 +20,11 @@ jobs:
           java-version: 17
           cache: 'maven'
 
-      - name: Make mvnw executable
+      - name: Ensure mvnw is executable
         run: chmod +x mvnw
 
-      - name: Build JAR
-        run: |
-          ./mvnw clean package -DskipTests
+      - name: Build application JAR (skip tests)
+        run: ./mvnw clean package -DskipTests
 
       - name: Log in to GitHub Container Registry
         run: |
@@ -41,6 +41,7 @@ jobs:
           docker push ghcr.io/xlillium/test-gh-deploy-backend:latest
 
   deploy:
+    name: Deploy to VPS
     needs: build-and-push-docker-image
     runs-on: ubuntu-latest
 
@@ -53,6 +54,4 @@ jobs:
           key: ${{ secrets.VPS_KEY }}
 
           script: |
-            # docker login ghcr.io -u "${{ secrets.GHCR_USER }}" -p "${{ secrets.GHCR_TOKEN }}"
-
             env GIT_COMMIT_HASH=${{ github.sha }} docker stack deploy -c docker-stack.yml test-gh-deploy
