@@ -42,7 +42,7 @@ jobs:
 
   deploy:
     name: Deploy to VPS
-    needs: build-and-push-docker-image
+    needs: build-and-publish
     runs-on: ubuntu-latest
 
     steps:
